@@ -3,7 +3,81 @@
 #include <vector>
 #include <iomanip>
 #include <ctime>
+#include <dirent.h>
+#include <string>
+
 using namespace std;
+
+void listOrInput(string& filePath)
+{
+    int choice;
+    cout << "\033[1;31m1.\033[0m Choose from Existing Maps" << endl;
+    cout << "\033[1;31m2.\033[0m Import a Custom Map" << endl;
+    cout << "Enter your choice: ";
+    cin >> choice;
+    switch (choice)
+    {
+        case 1:
+        {
+            string folderPath = "./Maps/";
+
+            DIR *dir = opendir(folderPath.c_str());
+
+            if (dir)
+            {
+                vector<string> fileNames;
+
+                struct dirent *entry;
+                int index = 1;
+                while ((entry = readdir(dir)) != nullptr)
+                {
+                    // Exclude . and ..
+                    if (string(entry->d_name) != "." && string(entry->d_name) != "..")
+                    {
+                        cout << index << ". " << entry->d_name << endl;
+                        fileNames.push_back(entry->d_name);
+                        index++;
+                    }
+                }
+
+                closedir(dir);
+
+                cout << "Choose a file by entering its index: ";
+                int choice;
+                cin >> choice;
+
+                if (choice >= 1 && choice <= static_cast<int>(fileNames.size()))
+                {
+                    string selectedFile = fileNames[choice - 1];
+                    filePath = folderPath + selectedFile;
+                }
+                else
+                {
+                    cerr << "Invalid choice." << endl;
+                    return;
+                }
+            }
+            else
+            {
+                cerr << "Error opening directory: " << folderPath << endl;
+                return;
+            }
+            break;
+        }
+        case 2:
+        {
+            string filePath;
+            cout << "Please Enter the Path to the Maze :" << endl;
+            cin.ignore(1, '\n');
+            getline(cin, filePath);
+            break;
+        }
+        default:
+            cerr << "Invalid choice." << endl;
+    }
+    
+}
+
 // These are the libraries that the programe wants to start the maze game
 void printMatrix(const vector<vector<int>>& matrix, ofstream& fout, int p)
 //The function gets a 2D vector , an output file and an integer from the user
