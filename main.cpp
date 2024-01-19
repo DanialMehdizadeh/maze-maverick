@@ -34,7 +34,7 @@ void listOrInput(string& filePath)
                     // Exclude . and ..
                     if (string(entry->d_name) != "." && string(entry->d_name) != "..")
                     {
-                        cout << index << ". " << entry->d_name << endl;
+                        cout << "\033[93m" << index << ". " << "\033[0m" << entry->d_name << endl;
                         fileNames.push_back(entry->d_name);
                         index++;
                     }
@@ -77,7 +77,6 @@ void listOrInput(string& filePath)
     }
     
 }
-
 // These are the libraries that the programe wants to start the maze game
 void printMatrix(const vector<vector<int>>& matrix, ofstream& fout, int p)
 //The function gets a 2D vector , an output file and an integer from the user
@@ -113,6 +112,7 @@ int main()
     //welcome to user
     do
     {
+        cout << "\033[1;31m   MAIN MENU\033[0m"<< endl;
         cout << "\033[1;31m1.\033[0m Create a New Easy Map" << endl;
         cout << "\033[1;31m2.\033[0m Playground" << endl;
         cout << "\033[1;31m3.\033[0m Solve a Maze" << endl;
@@ -259,6 +259,13 @@ int main()
                 fout.close();
                 break;
             }
+            case 2:
+            {
+                string filePath = "";
+                listOrInput(filePath);
+                break;
+                
+            }
             case 5:
             {
                 cout << "Thanks for playing" << endl;
@@ -274,9 +281,5 @@ int main()
     while (choice != 5);
      // print a thank you message if the user didnt choose to exit earlier
 
-    if (choice != 5)
-    {
-        cout << "Thanks for playing" << endl;
-    }
     return 0;
-}
+}   
