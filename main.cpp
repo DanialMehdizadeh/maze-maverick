@@ -4,9 +4,54 @@
 #include <iomanip>
 #include <ctime>
 #include <dirent.h>
+#include <sstream>
 #include <string>
 
 using namespace std;
+
+vector<vector<int>> readMatrixFromFile(const string& filename, int& numRows, int& numCols, int& pathLength)
+{
+    vector<vector<int>> matrix;
+
+    ifstream inputFile(filename);
+    if (!inputFile.is_open())
+    {
+        cerr << "Error opening file: " << filename << endl;
+        return matrix;
+    }
+
+    string Name;
+    getline(inputFile, Name);
+    inputFile >> pathLength;
+    
+    string line;
+    while (getline(inputFile, line))
+    {
+        if (line != "")
+        {
+            vector<int> row;
+            istringstream iss(line);
+
+            int num;
+            while (iss >> num)
+            {
+                row.push_back(num);
+            }
+
+            // Update the number of columns based on the first row
+            if (numRows == 0)
+            {
+                numCols = row.size();
+            }
+
+            matrix.push_back(row);
+            numRows++;
+        }
+    }
+
+    inputFile.close();
+    return matrix;
+}
 
 void listOrInput(string& filePath)
 {
@@ -78,7 +123,7 @@ void listOrInput(string& filePath)
     
 }
 // These are the libraries that the programe wants to start the maze game
-void printMatrix(const vector<vector<int>>& matrix, ofstream& fout, int p)
+void saveMatrix(const vector<vector<int>>& matrix, ofstream& fout, int p)
 //The function gets a 2D vector , an output file and an integer from the user
 {
     fout << "Easy" << endl << endl << p << endl << endl;
@@ -160,11 +205,11 @@ int main()
                 vector<vector<int>> matrix(rows, vector<int>(cols, 0));
                 vector<vector<int>> visited(rows, vector<int>(cols, 0));
 
-                int p = rows + cols - 2; //calculate sum of rows and cols - 2
+                int pathLength = rows + cols - 2; //calculate sum of rows and cols - 2
                 int lowerLimit = -3, upperLimit = 3;
 				// gives random numbers for the maze
                 int currentx = 0, currenty = 0, sum = 0;
-                for (int k = 0; k < p; k++)
+                for (int k = 0; k < pathLength; k++)
                 {
                 	// gives random values between -3 and 3
                     int randomValue = rand() % (7) - 3;
@@ -254,7 +299,7 @@ int main()
                     }
                 }
 				// Print and save the maze
-                printMatrix(matrix, fout, p);
+                saveMatrix(matrix, fout, pathLength);
                 cout << "Maze saved successfully" << endl;
                 fout.close();
                 break;
@@ -263,6 +308,15 @@ int main()
             {
                 string filePath = "";
                 listOrInput(filePath);
+                int numRows, numCols, pathLength;
+                vector <vector<int>> matrix=readMatrixFromFile(filePath, numRows, numCols, pathLength);
+                for (const auto& row : matrix)
+                {
+                    for (int num : row) {
+                        cout << setw(2) << num << " ";
+                    }
+                    cout << endl;
+                }
                 break;
                 
             }
