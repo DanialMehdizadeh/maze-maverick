@@ -122,12 +122,12 @@ void listOrInput(string& filePath)
     }
     
 }
-// These are the libraries that the programe wants to start the maze game
-void saveMatrix(const vector<vector<int>>& matrix, ofstream& fout, int p)
+// These are the libraries that the program wants to start the maze game
+void saveMatrix(const vector<vector<int>>& matrix, ofstream& fout, int pathLength)
 //The function gets a 2D vector , an output file and an integer from the user
 {
-    fout << "Easy" << endl << endl << p << endl << endl;
-    //print "Easy" and the integer "p" in the output file
+    fout << "Easy" << endl << endl << pathLength << endl << endl;
+    //print "Easy" and the integer pathLength in the output file
     for (int i = 0; i < matrix.size(); i++)
     {
         for (int j = 0; j < matrix[i].size(); j++)
@@ -146,12 +146,12 @@ void saveMatrix(const vector<vector<int>>& matrix, ofstream& fout, int p)
 int getRandomNumber(int min, int max)
 {
     return rand() % (max - min + 1) + min;
-    //this function by using rand() function gives a number betwen min and max
+    //this function by using rand() function gives a number between min and max
 }
 
 int main()
 {
-	//now lets go for the main func of programe
+	//now lets go for the main function of program
     int choice;
     cout << "WELCOME TO MAZEEEEEEE" << endl;
     //welcome to user
@@ -163,7 +163,7 @@ int main()
         cout << "\033[1;31m3.\033[0m Solve a Maze" << endl;
         cout << "\033[1;31m4.\033[0m History" << endl;
         cout << "\033[1;31m5.\033[0m Exit" << endl;
-        //options of menue that user can choice betweeen them
+        //options of menu that user can choose between them
         cout << "Enter your choice: ";
         cin >> choice;
         switch (choice)
@@ -176,7 +176,7 @@ int main()
                 int rows, cols;
                 cout << "Enter the number of rows: ";
                 if (!(cin >> rows) || rows <= 0)
-                //check if number of rows is logical or no 
+                //check if number of rows is logical or not
                 {
                     cerr << "Invalid input for the number of rows. Please enter a valid number." << endl;
                     return 1;
@@ -184,7 +184,7 @@ int main()
                 cout << "Enter the number of columns: ";
                 if (!(cin >> cols) || cols <= 0 || cols > 63)
                 {
-                	 //check if number of columns is logical or no
+                	 //check if number of columns is logical or not
                     cerr << "Invalid input for the number of columns. Please enter a valid number." << endl;
                     return 1;
                 }
@@ -205,7 +205,7 @@ int main()
                 vector<vector<int>> matrix(rows, vector<int>(cols, 0));
                 vector<vector<int>> visited(rows, vector<int>(cols, 0));
 
-                int pathLength = rows + cols - 2; //calculate sum of rows and cols - 2
+                int pathLength = rows + cols - 2; //pathLength for the easy maze formula
                 int lowerLimit = -3, upperLimit = 3;
 				// gives random numbers for the maze
                 int currentx = 0, currenty = 0, sum = 0;
@@ -327,13 +327,13 @@ int main()
             }
 
             default:
-            	// if user enters a number except 1,2,3,4,5 it will print this to wanrn user
+            	// if user enters a number except 1,2,3,4,5 it will print this to warn user
                 cout << "Invalid choice. Please enter a valid option." << endl;
                 break;
         }
     }
     while (choice != 5);
-     // print a thank you message if the user didnt choose to exit earlier
+    
 
     return 0;
 }   
