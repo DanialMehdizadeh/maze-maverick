@@ -12,6 +12,9 @@
 #include <chrono>
 
 using namespace std;
+
+
+
 //PLAYGROUND
 bool isValidCell(int x, int y, vector<vector<int>>& matrix, vector<vector<bool>>& visited)
 {
@@ -127,19 +130,83 @@ string getCurrentDateAsString()
     return ss.str();
 }
 ///////////////////////////
-vector<vector<int>> readMatrixFromFile(const string& filename, int& numRows, int& numCols, int& pathLength)
+//SOLVING THE MAZE
+bool isSafe(int x, int y, vector<vector<int>>& maze)
+{
+    return (x >= 0 && x < maze.size() && y >= 0 && y < maze[0].size() && maze[x][y] != 0);
+}
+
+bool solveMaze(int x, int y, int sum, vector<vector<int>>& maze, vector<vector<int>>& solved)
+{
+    if (x == maze.size() - 1 && y == maze[0].size() - 1)
+    {
+        if (sum == maze[x][y])
+        {
+            solved[x][y] = 1;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    if (isSafe(x, y, maze))
+    {
+        solved[x][y] = 1;
+        sum += maze[x][y];
+
+        if (solveMaze(x + 1, y, sum, maze, solved))
+        {
+            return true;
+        }
+        if (solveMaze(x, y + 1, sum, maze, solved))
+        {
+            return true;
+        }
+        solved[x][y] = 0;
+        return false;
+    }
+
+    return false;
+}
+void printMaze(vector<vector<int>>& maze, vector<vector<int>>& solved)
+{
+    for (int i = 0; i < maze.size(); i++)
+    {
+        for (int j = 0; j < maze[i].size(); j++)
+        {
+            if (solved[i][j] == 1)
+            {
+                SetConsoleColor(10);
+            }
+            if (maze[i][j] == 0)
+            {
+                SetConsoleColor(8);
+            }
+            cout << setw(2) << maze[i][j] << " ";
+            SetConsoleColor(7);
+        }
+        cout << endl;
+    }
+}
+////////////////////////
+vector<vector<int>> readMatrixFromFile(const string& filePath, int& numRows, int& numCols, int& pathLength, string& fileName)
 {
     vector<vector<int>> matrix;
 
-    ifstream inputFile(filename);
+    ifstream inputFile(filePath);
     if (!inputFile.is_open())
     {
-        cerr << "Error opening file: " << filename << endl;
+        cerr << "Error opening file: " << filePath << endl;
         return matrix;
     }
 
-    string Name;
-    getline(inputFile, Name);
+    getline(inputFile, fileName);
+    inputFile.ignore(1, '\n');
+    inputFile.ignore(1, '\n');
+    string difficulty;
+    getline(inputFile, difficulty);
     inputFile >> pathLength;
     
     string line;
@@ -171,7 +238,7 @@ vector<vector<int>> readMatrixFromFile(const string& filename, int& numRows, int
     return matrix;
 }
 
-void listOrInput(string& filePath, string& fileName)
+void listOrInput(string& filePath)
 {
     int choice;
     cout << "\033[1;31m1.\033[0m Choose from Existing Maps" << endl;
@@ -212,7 +279,6 @@ void listOrInput(string& filePath, string& fileName)
                 if (choice >= 1 && choice <= static_cast<int>(fileNames.size()))
                 {
                     string selectedFile = fileNames[choice - 1];
-                    fileName = selectedFile;
                     filePath = folderPath + selectedFile;
                 }
                 else
@@ -233,11 +299,6 @@ void listOrInput(string& filePath, string& fileName)
             cout << "Please Enter the Path to the Maze :" << endl;
             cin.ignore(1, '\n');
             getline(cin, filePath);
-            for (int i = filePath.length()-1; filePath[i] != '/'; i--)
-            {
-                fileName += filePath[i];
-            }
-            reverse(fileName.begin(), fileName.end());
             break;
         }
         default:
@@ -246,10 +307,10 @@ void listOrInput(string& filePath, string& fileName)
     
 }
 // These are the libraries that the program wants to start the maze game
-void saveMatrix(const vector<vector<int>>& matrix, ofstream& fout, int pathLength)
+void saveMatrix(const vector<vector<int>>& matrix, ofstream& fout, int pathLength, string& filename)
 //The function gets a 2D vector , an output file and an integer from the user
 {
-    fout << "Easy" << endl << endl << pathLength << endl << endl;
+    fout << filename << endl << endl << "Easy" << endl << endl << pathLength << endl << endl;
     //print "Easy" and the integer pathLength in the output file
     for (int i = 0; i < matrix.size(); i++)
     {
@@ -323,12 +384,12 @@ int main()
                     return 1;
                 }
 				// Get the filename for the maze
-                string filename;
+                string fileName;
                 cout << "Enter the name of the maze: "<< endl;
                 cin.ignore(1, '\n');
-                getline(cin, filename);
+                getline(cin, fileName);
                 // Open the output file
-                ofstream fout("./Maps/" + filename + ".txt");
+                ofstream fout("./Maps/" + fileName + ".txt");
                 if (!fout.is_open())
                 {
                     cerr << "Error opening the file!" << endl;
@@ -366,7 +427,8 @@ int main()
                     }
                     else
                     {
-                        if (getRandomNumber(0, 1) == 0)
+                        int randomNumber = rand();
+                        if (randomNumber % 2 == 0)
                         {
                             currentx++;
                         }
@@ -433,7 +495,7 @@ int main()
                     }
                 }
 				// Print and save the maze
-                saveMatrix(matrix, fout, pathLength);
+                saveMatrix(matrix, fout, pathLength, fileName);
                 cout << "Maze saved successfully" << endl;
                 cout << "Press any key to continue" << endl;
                 char next = _getch();
@@ -447,14 +509,14 @@ int main()
             {
                 string filePath = "";
                 string fileName = "";
-                listOrInput(filePath, fileName);
+                listOrInput(filePath);
                 string username;
                 cout << "Enter your username here: " << endl;
                 cin.ignore(1, '\n');
                 getline(cin, username);
                 int numRows, numCols, pathLength;
 
-                vector <vector<int>> matrix=readMatrixFromFile(filePath, numRows, numCols, pathLength);
+                vector <vector<int>> matrix=readMatrixFromFile(filePath, numRows, numCols, pathLength, fileName);
                 vector<vector<bool>> visited(matrix.size(), vector<bool>(matrix[0].size(), false));
                 visited[0][0] = true;
 
@@ -575,14 +637,42 @@ int main()
                 break;
                 
             }
+            //Solving the Maze
+            case 3:
+            {
+                string filePath = "";
+                string fileName = "";
+                listOrInput(filePath);
+                int numRows, numCols, pathLength;
+                vector <vector<int>> maze=readMatrixFromFile(filePath, numRows, numCols, pathLength, fileName);
+                vector<vector<int>> solved(maze.size(), vector<int>(maze[0].size(), 0));
+                solved[0][0] = 1;
+
+                if (!solveMaze(0, 0, 0, maze, solved))
+                {
+                    printMaze(maze, solved);
+                    cout << "Solution doesn't exist";
+                    break;
+                }
+                else
+                {
+                    printMaze(maze, solved);
+                }
+                cout << "Press any key to continue" << endl;
+                char next = _getch();
+                system("cls");
+                gotoxy(0, 0);
+                break;
+
+            }
             //History
             case 4:
             {
                 ifstream historyIn("./Stats/History.txt");
                 vector<string> History;
                 string line;
-                int i=0;
-                while (i<10 && getline(historyIn, line))
+                int i = 0;
+                while (i < 10 && getline(historyIn, line))
                 {
                     History.push_back(line);
                     i++;
@@ -599,6 +689,7 @@ int main()
                 gotoxy(0, 0);
                 break;
             }
+            //User Information
             case 5:
             {
                 string username;
