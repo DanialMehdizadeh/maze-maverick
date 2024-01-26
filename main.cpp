@@ -5,10 +5,128 @@
 #include <ctime>
 #include <dirent.h>
 #include <sstream>
+#include <conio.h>
+#include <windows.h>
+#include <algorithm>
 #include <string>
+#include <chrono>
 
 using namespace std;
+//PLAYGROUND
+bool isValidCell(int x, int y, vector<vector<int>>& matrix, vector<vector<bool>>& visited)
+{
+    return (x >= 0 && x < matrix.size()) && (y >= 0 && y < matrix[0].size()) && (visited[x][y] == 0) && (matrix[x][y] != 0);
+}
 
+void SetConsoleColor(int val)
+{
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), val);
+}
+
+void gotoxy(int x, int y)
+{
+    COORD coord;
+    coord.X = x;
+    coord.Y = y;
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+}
+
+void printMatrix(int currentRow, int currentCol, vector<vector<int>>& matrix, vector<vector<bool>>& visited, int stepsLeft, int sum)
+{
+    system("cls");
+    gotoxy(0, 0);
+
+    for (int i = 0; i < matrix.size(); i++)
+    {
+        for (int j = 0; j < matrix[i].size(); j++)
+        {
+            if (visited[i][j])
+            {
+                SetConsoleColor(12);
+            }
+            if (matrix[i][j] == 0)
+            {
+                SetConsoleColor(8);
+            }
+            if (i == currentRow && j == currentCol)
+            {
+                SetConsoleColor(10);
+            }
+            cout << setw(2) << matrix[i][j] << " ";
+            SetConsoleColor(7);
+        }
+        cout << endl;
+    }
+    cout << stepsLeft << " Steps Left !" << endl;
+    cout << "Sum so far is " << sum << endl;
+}
+///////////////////////////
+
+//USERS
+struct User
+{
+    string username;
+    int totalGames;
+    int totalWins;
+    double lastWinTime;
+    double totalGameTime;
+};
+void saveUser(const User& user)
+{
+    string filename = "./Users/" + user.username + ".txt";
+    ofstream outfile(filename);
+
+    if (outfile.is_open())
+    {
+        outfile << user.username << endl;
+        outfile << user.totalGames << endl;
+        outfile << user.totalWins << endl;
+        outfile << user.totalGameTime << endl;
+        outfile << user.lastWinTime << endl;
+        outfile.close();
+    }
+    else
+    {
+        cout << "Error: Unable to open file for user " << user.username << endl;
+    }
+}
+User readUser(const string& username)
+{
+    User user;
+    string filename = "./Users/" + username + ".txt";
+    ifstream infile(filename);
+
+    if (infile.is_open())
+    {
+        infile >> user.username;
+        infile >> user.totalGames;
+        infile >> user.totalWins;
+        infile >> user.totalGameTime;
+        infile >> user.lastWinTime;
+        infile.close();
+    }
+    else
+    {
+        user.username = username;
+        user.totalGames = 0;
+        user.totalWins = 0;
+        user.totalGameTime = 0;
+        user.lastWinTime = 0;
+    }
+    return user;
+}
+///////////////////////////
+
+//History
+string getCurrentDateAsString()
+{
+    time_t now = time(nullptr);
+    tm *localTime = localtime(&now);
+    stringstream ss;
+    ss << put_time(localTime, "%Y-%m-%d");
+    return ss.str();
+}
+///////////////////////////
 vector<vector<int>> readMatrixFromFile(const string& filename, int& numRows, int& numCols, int& pathLength)
 {
     vector<vector<int>> matrix;
@@ -53,7 +171,7 @@ vector<vector<int>> readMatrixFromFile(const string& filename, int& numRows, int
     return matrix;
 }
 
-void listOrInput(string& filePath)
+void listOrInput(string& filePath, string& fileName)
 {
     int choice;
     cout << "\033[1;31m1.\033[0m Choose from Existing Maps" << endl;
@@ -94,6 +212,7 @@ void listOrInput(string& filePath)
                 if (choice >= 1 && choice <= static_cast<int>(fileNames.size()))
                 {
                     string selectedFile = fileNames[choice - 1];
+                    fileName = selectedFile;
                     filePath = folderPath + selectedFile;
                 }
                 else
@@ -111,10 +230,14 @@ void listOrInput(string& filePath)
         }
         case 2:
         {
-            string filePath;
             cout << "Please Enter the Path to the Maze :" << endl;
             cin.ignore(1, '\n');
             getline(cin, filePath);
+            for (int i = filePath.length()-1; filePath[i] != '/'; i--)
+            {
+                fileName += filePath[i];
+            }
+            reverse(fileName.begin(), fileName.end());
             break;
         }
         default:
@@ -151,9 +274,11 @@ int getRandomNumber(int min, int max)
 
 int main()
 {
+    system("cls");
+    gotoxy(0, 0);
 	//now lets go for the main function of program
     int choice;
-    cout << "WELCOME TO MAZEEEEEEE" << endl;
+    cout << "\033[1;31mWELCOME TO MAZEEEEEEE\033[0m" << endl;
     //welcome to user
     do
     {
@@ -162,14 +287,23 @@ int main()
         cout << "\033[1;31m2.\033[0m Playground" << endl;
         cout << "\033[1;31m3.\033[0m Solve a Maze" << endl;
         cout << "\033[1;31m4.\033[0m History" << endl;
-        cout << "\033[1;31m5.\033[0m Exit" << endl;
+        cout << "\033[1;31m5.\033[0m User Information" << endl;
+        cout << "\033[1;31m6.\033[0m Exit" << endl;
         //options of menu that user can choose between them
         cout << "Enter your choice: ";
         cin >> choice;
+        while (cin.fail() || choice < 1 || choice > 6)
+        {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid choice. Please enter a valid option (1-6): ";
+            cin >> choice;
+        }
         switch (choice)
         {
+
+            //Creating a new maze
             case 1:
-            	 //Creating a new maze
             {
                 srand(static_cast<unsigned int>(time(0)));
 
@@ -301,38 +435,198 @@ int main()
 				// Print and save the maze
                 saveMatrix(matrix, fout, pathLength);
                 cout << "Maze saved successfully" << endl;
+                cout << "Press any key to continue" << endl;
+                char next = _getch();
+                system("cls");
+                gotoxy(0, 0);
                 fout.close();
                 break;
             }
+            //Playground
             case 2:
             {
                 string filePath = "";
-                listOrInput(filePath);
+                string fileName = "";
+                listOrInput(filePath, fileName);
+                string username;
+                cout << "Enter your username here: " << endl;
+                cin.ignore(1, '\n');
+                getline(cin, username);
                 int numRows, numCols, pathLength;
+
                 vector <vector<int>> matrix=readMatrixFromFile(filePath, numRows, numCols, pathLength);
-                for (const auto& row : matrix)
+                vector<vector<bool>> visited(matrix.size(), vector<bool>(matrix[0].size(), false));
+                visited[0][0] = true;
+
+                int sum = 0;
+                int currentRow = 0;
+                int currentCol = 0;
+                int stepsLeft = pathLength;
+                system("cls");
+                auto start = std::chrono::high_resolution_clock::now();
+
+                while (!(currentRow == matrix.size()-1 && currentCol == matrix[0].size()-1) && (isValidCell(currentRow-1, currentCol, matrix, visited)||isValidCell(currentRow, currentCol-1, matrix, visited))||isValidCell(currentRow+1, currentCol, matrix, visited)||isValidCell(currentRow, currentCol+1, matrix, visited))
                 {
-                    for (int num : row) {
-                        cout << setw(2) << num << " ";
+                    if (stepsLeft == 0)
+                    {
+                        break;
                     }
-                    cout << endl;
+                    printMatrix(currentRow, currentCol, matrix, visited, stepsLeft, sum+matrix[currentRow][currentCol]);
+
+                    char key = _getch();
+
+                    switch (key)
+                    {
+                        case 'w':
+                            if (isValidCell(currentRow-1, currentCol, matrix, visited))
+                            {
+                                sum += matrix[currentRow][currentCol];
+                                currentRow--;
+                                stepsLeft--;
+                            }
+                            break;
+                        case 'a':
+                            if (isValidCell(currentRow, currentCol-1, matrix, visited))
+                            {
+                                sum += matrix[currentRow][currentCol];
+                                currentCol--;
+                                stepsLeft--;
+                            }
+                            break;
+                        case 's':
+                            if (isValidCell(currentRow+1, currentCol, matrix, visited))
+                            {
+                                sum += matrix[currentRow][currentCol];
+                                currentRow++;
+                                stepsLeft--;
+                            }
+                            break;
+                        case 'd':
+                            if (isValidCell(currentRow, currentCol+1, matrix, visited))
+                            {
+                                sum += matrix[currentRow][currentCol];
+                                currentCol++;
+                                stepsLeft--;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
+                    visited[currentRow][currentCol] = true;
                 }
+                auto end = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+                printMatrix(currentRow, currentCol, matrix, visited, stepsLeft, sum);
+                User user = readUser(username);
+                string history = getCurrentDateAsString() + " user(" + username + ")" + " in (" + fileName + ")" + " map ";
+
+                if (currentRow == matrix.size()-1 && currentCol == matrix[0].size()-1)
+                {
+                    if (sum == matrix[currentRow][currentCol])
+                    {
+                        cout << "You WON!!" << endl;
+                        user.totalGames++;
+                        user.totalWins++;
+                        user.totalGameTime += duration.count();
+                        user.lastWinTime = duration.count();
+                        history += "WON in " + to_string(duration.count()) +" seconds.";
+                    }
+                    else
+                    {
+                        cout << "You LOST!!" << endl;
+                        user.totalGames++;
+                        user.totalGameTime += duration.count();
+                        history += "LOST in " + to_string(duration.count()) +" seconds.";
+                    }
+                }
+                else
+                {
+                    cout << "You Lost" << endl;
+                    user.totalGames++;
+                    user.totalGameTime += duration.count();
+                    history += "LOST in " + to_string(duration.count()) +" seconds.";
+                }
+
+                ifstream historyIn("./Stats/History.txt");
+                vector<string> oldHistory;
+                string line;
+                while (getline(historyIn, line))
+                {
+                    oldHistory.push_back(line);
+                }
+                historyIn.close();
+
+                ofstream historyOut("./Stats/History.txt");
+                historyOut << history << "\n";
+                for (const auto& originalHistory : oldHistory)
+                {
+                    historyOut << originalHistory << "\n";
+                }
+                historyOut.close();
+                
+
+                saveUser(user);
+                Sleep(2);
+                cout << "Press any key to continue" << endl;
+                char next = _getch();
+                system("cls");
+                gotoxy(0, 0);
                 break;
                 
             }
+            //History
+            case 4:
+            {
+                ifstream historyIn("./Stats/History.txt");
+                vector<string> History;
+                string line;
+                int i=0;
+                while (i<10 && getline(historyIn, line))
+                {
+                    History.push_back(line);
+                    i++;
+                }
+                int index = 1;
+                for (const auto& topTenHistory : History)
+                {
+                    cout << "\033[94m" << index << ". " << "\033[0m" << "\033[96m" << topTenHistory << "\033[0m" << "\n";
+                    index++;
+                }
+                cout << "Press any key to continue" << endl;
+                char next = _getch();
+                system("cls");
+                gotoxy(0, 0);
+                break;
+            }
             case 5:
+            {
+                string username;
+                cout << "Please enter your username below :" << endl;
+                cin.ignore(1, '\n');
+                getline(cin, username);
+                User user = readUser(username);
+                cout << "\033[92m" << "Username: " << "\033[0m" << user.username << endl;
+                cout << "\033[92m" << "Total Games: " << "\033[0m" << user.totalGames << endl;
+                cout << "\033[92m" << "Total Wins: " << "\033[0m" << user.totalWins << endl;
+                cout << "\033[92m" << "Last Win Time: " << "\033[0m" << user.lastWinTime << endl;
+                cout << "\033[92m" << "Total Game Time: " << "\033[0m" << user.totalGameTime << endl;
+                cout << "Press any key to continue" << endl;
+                char next = _getch();
+                system("cls");
+                gotoxy(0, 0);
+                break;
+
+            }
+            //Exiting game
+            case 6:
             {
                 cout << "Thanks for playing" << endl;
                 break;
             }
-
-            default:
-            	// if user enters a number except 1,2,3,4,5 it will print this to warn user
-                cout << "Invalid choice. Please enter a valid option." << endl;
-                break;
         }
     }
-    while (choice != 5);
+    while (choice != 6);
     
 
     return 0;
