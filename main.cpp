@@ -130,6 +130,7 @@ string getCurrentDateAsString()
     return ss.str();
 }
 ///////////////////////////
+
 //SOLVING THE MAZE
 bool isSafe(int x, int y, vector<vector<int>>& maze)
 {
@@ -245,6 +246,13 @@ void listOrInput(string& filePath)
     cout << "\033[1;31m2.\033[0m Import a Custom Map" << endl;
     cout << "Enter your choice: ";
     cin >> choice;
+    while (cin.fail() || choice < 1 || choice > 2)
+    {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Invalid choice. Please enter a valid option (1-2): ";
+        cin >> choice;
+    }
     switch (choice)
     {
         case 1:
