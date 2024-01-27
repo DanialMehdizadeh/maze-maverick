@@ -10,13 +10,14 @@
 #include <algorithm>
 #include <string>
 #include <chrono>
-
+//used libraries
 using namespace std;
 
 
 
 //PLAYGROUND
 bool isValidCell(int x, int y, vector<vector<int>>& matrix, vector<vector<bool>>& visited)
+//check 3 conditions for each cell of matrix
 {
     return (x >= 0 && x < matrix.size()) && (y >= 0 && y < matrix[0].size()) && (visited[x][y] == 0) && (matrix[x][y] != 0);
 }
@@ -27,6 +28,7 @@ void SetConsoleColor(int val)
 }
 
 void gotoxy(int x, int y)
+//function to go to the first place 
 {
     COORD coord;
     coord.X = x;
@@ -36,6 +38,7 @@ void gotoxy(int x, int y)
 
 void printMatrix(int currentRow, int currentCol, vector<vector<int>>& matrix, vector<vector<bool>>& visited, int stepsLeft, int sum)
 {
+	//function that print the matrix again and again with diffrent color situations
     system("cls");
     gotoxy(0, 0);
 
@@ -130,10 +133,10 @@ string getCurrentDateAsString()
     return ss.str();
 }
 ///////////////////////////
-
 //SOLVING THE MAZE
 bool isSafe(int x, int y, vector<vector<int>>& maze)
 {
+	//to check can we go to other neighbours of cell or not
     return (x >= 0 && x < maze.size() && y >= 0 && y < maze[0].size() && maze[x][y] != 0);
 }
 
@@ -146,6 +149,7 @@ bool solveMaze(int x, int y, int sum, vector<vector<int>>& maze, vector<vector<i
             solved[x][y] = 1;
             return true;
         }
+        //if it reached last cell and the cell values equals to sum its the right way
         else
         {
             return false;
@@ -202,16 +206,17 @@ vector<vector<int>> readMatrixFromFile(const string& filePath, int& numRows, int
         cerr << "Error opening file: " << filePath << endl;
         return matrix;
     }
+// Read the first line from the file and store it as the file name
 
     getline(inputFile, fileName);
-    inputFile.ignore(1, '\n');
-    inputFile.ignore(1, '\n');
-    string difficulty;
+    inputFile.ignore(1, '\n');//ignore first line
+    inputFile.ignore(1, '\n');//ignore secod line
+    string difficulty;//the difficulty of maze
     getline(inputFile, difficulty);
-    inputFile >> pathLength;
+    inputFile >> pathLength;// Read the path length from the file
     
     string line;
-    while (getline(inputFile, line))
+    while (getline(inputFile, line)) // Read each line from the file and construct the matrix
     {
         if (line != "")
         {
@@ -343,7 +348,9 @@ int getRandomNumber(int min, int max)
 
 int main()
 {
+	//clear everything
     system("cls");
+    //to start from the first
     gotoxy(0, 0);
 	//now lets go for the main function of program
     int choice;
@@ -407,6 +414,7 @@ int main()
 
                 vector<vector<int>> matrix(rows, vector<int>(cols, 0));
                 vector<vector<int>> visited(rows, vector<int>(cols, 0));
+                
 
                 int pathLength = rows + cols - 2; //pathLength for the easy maze formula
                 int lowerLimit = -3, upperLimit = 3;
@@ -423,19 +431,24 @@ int main()
                     }
                     matrix[currentx][currenty] = randomValue;
                     sum += randomValue;
+                    //marke one cell that checked
                     visited[currentx][currenty] = 1;
 					// going to the next cell
                     if (currentx == rows - 1)
                     {
                         currenty++;
+                        //we just can go down
                     }
                     else if (currenty == cols - 1)
                     {
                         currentx++;
+                        //we just can go right
                     }
                     else
                     {
+                    	// if we are not at last row or coloumn
                         int randomNumber = rand();
+                        //get a random number betwen 0 and 1
                         if (randomNumber % 2 == 0)
                         {
                             currentx++;
@@ -447,10 +460,13 @@ int main()
                     }
                 }
                 matrix[rows - 1][cols - 1] = sum;
+                //the last matrix is the sum
                 visited[rows - 1][cols - 1] = 1;
+                //and it is checked
 				// Add blocks to the maze
                 int countZero = 0;
                 for (const auto& row : matrix)
+                // this is a loop to calculate number of 0 numbers in maze
                 {
                     for (int value : row)
                     {
@@ -461,6 +477,7 @@ int main()
                     }
                 }
                 int blocks = getRandomNumber(2, 5);
+                // give a random number between 2 and 5
                 if (countZero < 2)
                 {
                     cerr << "Can't print blocks";
@@ -507,6 +524,7 @@ int main()
                 cout << "Maze saved successfully" << endl;
                 cout << "Press any key to continue" << endl;
                 char next = _getch();
+                //if user type anything doesnt show it on screen
                 system("cls");
                 gotoxy(0, 0);
                 fout.close();
@@ -534,6 +552,7 @@ int main()
                 int stepsLeft = pathLength;
                 system("cls");
                 auto start = std::chrono::high_resolution_clock::now();
+                //for the time duration
 
                 while (!(currentRow == matrix.size()-1 && currentCol == matrix[0].size()-1) && (isValidCell(currentRow-1, currentCol, matrix, visited)||isValidCell(currentRow, currentCol-1, matrix, visited))||isValidCell(currentRow+1, currentCol, matrix, visited)||isValidCell(currentRow, currentCol+1, matrix, visited))
                 {
@@ -546,8 +565,10 @@ int main()
                     char key = _getch();
 
                     switch (key)
+                    //check conditions of w a s d keys
                     {
                         case 'w':
+                        	//go up
                             if (isValidCell(currentRow-1, currentCol, matrix, visited))
                             {
                                 sum += matrix[currentRow][currentCol];
@@ -556,6 +577,7 @@ int main()
                             }
                             break;
                         case 'a':
+                        	//go left
                             if (isValidCell(currentRow, currentCol-1, matrix, visited))
                             {
                                 sum += matrix[currentRow][currentCol];
@@ -564,6 +586,7 @@ int main()
                             }
                             break;
                         case 's':
+                        	//go down
                             if (isValidCell(currentRow+1, currentCol, matrix, visited))
                             {
                                 sum += matrix[currentRow][currentCol];
@@ -572,6 +595,7 @@ int main()
                             }
                             break;
                         case 'd':
+                        	//go right
                             if (isValidCell(currentRow, currentCol+1, matrix, visited))
                             {
                                 sum += matrix[currentRow][currentCol];
@@ -587,14 +611,17 @@ int main()
                 }
                 auto end = std::chrono::high_resolution_clock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
+                //for endint timer and calculate time between start and time
                 printMatrix(currentRow, currentCol, matrix, visited, stepsLeft, sum);
                 User user = readUser(username);
                 string history = getCurrentDateAsString() + " user(" + username + ")" + " in (" + fileName + ")" + " map ";
 
                 if (currentRow == matrix.size()-1 && currentCol == matrix[0].size()-1)
                 {
+                	//if we reach to the last cell of matrix
                     if (sum == matrix[currentRow][currentCol])
                     {
+                    	//if sum value is equal to the last cell you won else you lost
                         cout << "You WON!!" << endl;
                         user.totalGames++;
                         user.totalWins++;
@@ -612,6 +639,7 @@ int main()
                 }
                 else
                 {
+                	//if you didnt reach to last cell you are already lost
                     cout << "You Lost" << endl;
                     user.totalGames++;
                     user.totalGameTime += duration.count();
@@ -648,6 +676,7 @@ int main()
             //Solving the Maze
             case 3:
             {
+            	//for solving a maze by programe
                 string filePath = "";
                 string fileName = "";
                 listOrInput(filePath);
@@ -700,11 +729,13 @@ int main()
             //User Information
             case 5:
             {
+            	//this case is about user information
                 string username;
                 cout << "Please enter your username below :" << endl;
                 cin.ignore(1, '\n');
                 getline(cin, username);
                 User user = readUser(username);
+                //by going to structure of user and getting values of it , prints them
                 cout << "\033[92m" << "Username: " << "\033[0m" << user.username << endl;
                 cout << "\033[92m" << "Total Games: " << "\033[0m" << user.totalGames << endl;
                 cout << "\033[92m" << "Total Wins: " << "\033[0m" << user.totalWins << endl;
