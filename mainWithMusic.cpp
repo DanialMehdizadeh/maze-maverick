@@ -14,6 +14,7 @@
 
 #pragma comment(lib, "winmm.lib")
 //used libraries
+
 using namespace std;
 
 
@@ -136,6 +137,8 @@ string getCurrentDateAsString()
     return ss.str();
 }
 ///////////////////////////
+
+
 //SOLVING THE MAZE
 bool isSafe(int x, int y, vector<vector<int>>& maze)
 {
@@ -199,6 +202,7 @@ void printMaze(vector<vector<int>>& maze, vector<vector<int>>& solved)
     }
 }
 ////////////////////////
+
 vector<vector<int>> readMatrixFromFile(const string& filePath, int& numRows, int& numCols, int& pathLength, string& fileName)
 {
     vector<vector<int>> matrix;
@@ -209,7 +213,7 @@ vector<vector<int>> readMatrixFromFile(const string& filePath, int& numRows, int
         cerr << "Error opening file: " << filePath << endl;
         return matrix;
     }
-// Read the first line from the file and store it as the file name
+    // Read the first line from the file and store it as the file name
 
     getline(inputFile, fileName);
     inputFile.ignore(1, '\n');//ignore first line
@@ -322,7 +326,6 @@ void listOrInput(string& filePath)
     }
     
 }
-// These are the libraries that the program wants to start the maze game
 void saveMatrix(const vector<vector<int>>& matrix, ofstream& fout, int pathLength, string& filename)
 //The function gets a 2D vector , an output file and an integer from the user
 {
@@ -540,14 +543,16 @@ int main()
                 string filePath = "";
                 string fileName = "";
                 listOrInput(filePath);
+                int numRows, numCols, pathLength;
+                vector <vector<int>> matrix=readMatrixFromFile(filePath, numRows, numCols, pathLength, fileName);
+                vector<vector<bool>> visited(matrix.size(), vector<bool>(matrix[0].size(), false));
+
                 string username;
                 cout << "Enter your username here: " << endl;
                 cin.ignore(1, '\n');
                 getline(cin, username);
-                int numRows, numCols, pathLength;
+                
 
-                vector <vector<int>> matrix=readMatrixFromFile(filePath, numRows, numCols, pathLength, fileName);
-                vector<vector<bool>> visited(matrix.size(), vector<bool>(matrix[0].size(), false));
                 visited[0][0] = true;
 
                 int sum = 0;
@@ -761,7 +766,8 @@ int main()
         }
     }
     while (choice != 6);
-    
+
+    Sleep(1000);
     PlaySound(0, 0, 0);
     return 0;
 }   
