@@ -761,7 +761,7 @@ int main()
     }
     while (choice != 6);
 
-    Sleep(10);
+    Sleep(1000);
 
     return 0;
 }   
