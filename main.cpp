@@ -539,6 +539,7 @@ int main()
                 string filePath = "";
                 string fileName = "";
                 listOrInput(filePath);
+                int numRows, numCols, pathLength;
                 vector <vector<int>> matrix=readMatrixFromFile(filePath, numRows, numCols, pathLength, fileName);
                 vector<vector<bool>> visited(matrix.size(), vector<bool>(matrix[0].size(), false));
 
@@ -546,7 +547,7 @@ int main()
                 cout << "Enter your username here: " << endl;
                 cin.ignore(1, '\n');
                 getline(cin, username);
-                int numRows, numCols, pathLength;
+                
 
                 visited[0][0] = true;
 
